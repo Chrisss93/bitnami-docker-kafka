@@ -56,6 +56,7 @@ if [[ ! -z "${KRAFT_ENABLED:-}" ]]; then
     [[ -z "${CLUSTER_ID:-}" ]] && CLUSTER_ID=$($KAFKA_HOME/bin/kafka-storage.sh random-uuid)
     warn "Using KRaft mode (EXPERIMENTAL) as a $role node in cluster: $CLUSTER_ID"
     $KAFKA_HOME/bin/kafka-storage.sh format -t $CLUSTER_ID -c $KAFKA_CONF_FILE
+    kafka_configure_from_environment_variables
 fi
 # Ensure custom initialization scripts are executed
 kafka_custom_init_scripts
