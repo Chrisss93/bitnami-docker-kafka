@@ -43,5 +43,19 @@ for dir in "$KAFKA_LOG_DIR" "$KAFKA_CONF_DIR" "$KAFKA_MOUNTED_CONF_DIR" "$KAFKA_
 done
 # Ensure Kafka is initialized
 kafka_initialize
+# Experimental KRaft mode
+if [[ ! -z "${KRAFT_ENABLED:-}" ]]; then
+    role=${KRAFT_ROLE:-server}
+    case $role in
+        broker|controller|server);;
+        *)
+            error "To run Kafka in KRaft mode, KRAFT_ROLE must be either: broker, controller or server"
+            exit 1
+    esac
+    mv $KAFKA_CONF_DIR/kraft/$role.properties $KAFKA_CONF_FILE
+    [[ -z "${CLUSTER_ID:-}" ]] && CLUSTER_ID=$($KAFKA_HOME/bin/kafka-storage.sh random-uuid)
+    warn "Using KRaft mode (EXPERIMENTAL) as a $role node in cluster: $CLUSTER_ID"
+    $KAFKA_HOME/bin/kafka-storage.sh format -t $CLUSTER_ID -c $KAFKA_CONF_FILE
+fi
 # Ensure custom initialization scripts are executed
 kafka_custom_init_scripts
